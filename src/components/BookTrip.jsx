@@ -213,12 +213,12 @@ export default function BookTrip() {
         }
       } else {
         console.log(
-          "selectedVehicleDetailsResponse >> ",
-          selectedVehicleDetailsResponse?.message
+          "fetchAvailableVehicleResponse >> ",
+          fetchAvailableVehicleResponse?.message
         );
         setShowNoVehicleModal({
           show: true,
-          message: selectedVehicleDetailsResponse?.message,
+          message: fetchAvailableVehicleResponse?.message,
         });
         return;
       }
@@ -271,6 +271,7 @@ export default function BookTrip() {
     };
     if (!authUser) {
       alert("Please login first");
+      openLoginRedirectModal();
       return;
     } else {
       try {
@@ -811,7 +812,7 @@ export default function BookTrip() {
                 Available seats:{" "}
                 {isNaN(selectedSeats.length)
                   ? "Select a Ride"
-                  : parseInt(`${vehicleDetails?.seatCapacity}`, 10) -
+                  : parseInt(`${vehicleDetails?.availableSeats.length}`, 10) -
                     selectedSeats.length}
               </p>
 

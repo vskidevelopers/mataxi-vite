@@ -1146,18 +1146,18 @@ export const useRoutesAndBookingFuntions = () => {
   };
 
   const updateSeatNumberBooking = async (bookingData) => {
-    console.log("booking Data >> ", bookingData);
+    console.log("booking Data for updating seatnumber >> ", bookingData);
     try {
       const { vehicleId, rideType, vehicleNumberPlate, selectedSeats } =
         bookingData;
       let subCollectionName = "";
 
       if (rideType === "Mataxi Standard") {
-        subCollectionName = "MataxiStandard";
+        subCollectionName = "mataxiStandard";
       } else if (rideType === "Mataxi XL") {
-        subCollectionName = "MataxiXl";
+        subCollectionName = "mataxiXl";
       } else if (rideType === "Mataxi Luxe") {
-        subCollectionName = "MataxiLuxe";
+        subCollectionName = "mataxiLuxe";
       }
 
       // TODO:
@@ -1169,22 +1169,33 @@ export const useRoutesAndBookingFuntions = () => {
         subCollectionName,
         vehicleId
       );
+
+      const vehicleCollectionRef = doc(
+        db,
+        "VehicleCollection",
+        subCollectionName,
+        subCollectionName,
+        vehicleId
+      );
       const availableVehicleCollectionDocRef = doc(
         db,
-        "availableVehicleCollection",
+        "AvailableVehicleCollection",
         subCollectionName,
         subCollectionName,
         vehicleId
       );
 
-      const vehicleSnapshot = await getDoc(bookingAllocationCollectionDocRef);
+      const bookingAllocationCollectionVehicleSnapshot = await getDoc(
+        bookingAllocationCollectionDocRef
+      );
       const availableVehicleSnapshot = await getDoc(
         availableVehicleCollectionDocRef
       );
+      const vehicleCollectionSnapshot = await getDoc(vehicleCollectionRef);
 
       // Check if the document exists
-      if (vehicleSnapshot.exists()) {
-        const vehicleDoc = vehicleSnapshot.data();
+      if (bookingAllocationCollectionVehicleSnapshot.exists()) {
+        const vehicleDoc = bookingAllocationCollectionVehicleSnapshot.data();
 
         console.log("vehicleDoc picked >> ", vehicleDoc);
         const currentBookedSeats = vehicleDoc?.bookedSeats;
@@ -1210,6 +1221,11 @@ export const useRoutesAndBookingFuntions = () => {
           await updateDoc(availableVehicleCollectionDocRef, {
             isAvailable: !isFull,
           });
+
+          await updateDoc(vehicleCollectionRef, {
+            isFull: isFull,
+          });
+
           console.log(`Vehicle ${vehicleNumberPlate} has been updated seats`);
           return {
             success: true,
@@ -1343,9 +1359,13 @@ export const useRoutesAndBookingFuntions = () => {
       while (true) {
         const availableVehicleCollectionRef = collection(
           db,
-          "AvailableVehiclesCollection",
+          "AvailableVehicleCollection",
           subCollectionName,
           subCollectionName
+        );
+
+        const availableVehicleCollectionSnapshot = await getDocs(
+          availableVehicleCollectionRef
         );
         const availableVehicleQuery = query(
           availableVehicleCollectionRef,
@@ -1354,6 +1374,15 @@ export const useRoutesAndBookingFuntions = () => {
 
         const availableVehicleQuerySnapshot = await getDocs(
           availableVehicleQuery
+        );
+
+        console.log(
+          "availableVehicleQuerySnapshot >> ",
+          availableVehicleQuerySnapshot
+        );
+        console.log(
+          "availableVehicleCollectionSnapshot >> ",
+          availableVehicleCollectionSnapshot
         );
 
         if (availableVehicleQuerySnapshot.empty) {

@@ -83,24 +83,27 @@ export const useBenkikoApiDepositWithdrawOperations = () => {
 
   const handlePayment = async (data, accessToken) => {
     const url = "https://staging.api.benkiko.io/v1/payment";
-
     console.log(
       "ACCESS TOKEN TO USE FOR PAYMENT >> ",
       accessToken?.data?.data?.token
     );
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        maxBodyLength: Infinity,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken?.data?.data?.token}`,
-        },
-        body: JSON.stringify(data),
-      });
-      const responseData = await response.json();
-      console.log("payment api response >> ", responseData);
+    const stringifiedData = JSON.stringify(data);
+    console.log("stringifiedData >> ", stringifiedData);
+    const response = await fetch(url, {
+      method: "post",
+      maxBodyLength: Infinity,
+      headers: {
+        "Content-Type": "application/json",
+        // "access-control-allow-origin": "*",
+        Authorization: `Bearer ${accessToken?.data?.data?.token}`,
+      },
+      body: stringifiedData,
+    });
 
+    try {
+      const responseData = await response.json();
+      console.log("payment api response >> ", response);
+      console.log("payment api response.JSON() >> ", responseData);
       if (responseData?.code !== 201) {
         throw new Error(`HTTP error Status: ${responseData?.message}`);
       } else {
@@ -115,7 +118,6 @@ export const useBenkikoApiDepositWithdrawOperations = () => {
       }
     } catch (error) {
       console.error("Error in Payment :", error);
-      throw new Error(`HTTP error! Status: ${responseData?.status}`);
     }
   };
 

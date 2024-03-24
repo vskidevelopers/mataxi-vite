@@ -36,6 +36,7 @@ import DepositFund from "./components/DepositFund.jsx";
 import BookTripCheckOut from "./components/BookTripCheckOut.jsx";
 import Paymail from "./auth/Paymail.jsx";
 import QueueManager from "./components/routeManager/QueueManager.jsx";
+import DriverWalletAutoGenarateComplete from "./auth/DriverWalletAutoGenerateComplete.jsx";
 
 // const { userData } = useAuthUserDataFunctions();
 const router = createBrowserRouter(
@@ -92,7 +93,10 @@ const router = createBrowserRouter(
               <Route index element={<Paymail />} />
               <Route path="mmemonics" element={<Mmemonics />} />
               <Route path="confirm-mmemonics" element={<CreatePassword />} />
-              <Route path="success" element={<SignUpComplete />} />
+              <Route
+                path="success"
+                element={<DriverWalletAutoGenarateComplete />}
+              />
             </Route>
           </Route>
           {/* <Route

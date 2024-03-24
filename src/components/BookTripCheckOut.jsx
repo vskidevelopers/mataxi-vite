@@ -70,6 +70,7 @@ export default function BookTripCheckOut() {
     const driverData = await fetchDriverUserInfo(tripDetails?.driverUid);
     const riderData = await fetchRiderUserInfo(authUser?.currentUser?.uid);
     console.log("riderData from checkout >> ", riderData);
+    console.log("driverData from checkout >> ", driverData);
 
     const paymentRequestBody = {
       destination: driverData?.data?.publicKey,
@@ -111,12 +112,16 @@ export default function BookTripCheckOut() {
 
           const addTransactionToFirestoreResponse =
             await addTransactionToFirestore(transactionData);
+          console.log(
+            "addTransactionToFirestoreResponse >> ",
+            addTransactionToFirestoreResponse
+          );
 
           if (addTransactionToFirestoreResponse?.success) {
             const updatePaidStatusRes = await updateBookingPaidStatus(
               ticketNumber
             );
-
+            console.log("updatePaidStatusRes  >> ", updatePaidStatusRes);
             if (updatePaidStatusRes?.success) {
               const updateSeatNumberBookingRes = await updateSeatNumberBooking(
                 tripDetails
