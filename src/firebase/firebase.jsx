@@ -1070,6 +1070,7 @@ export const useRoutesAndBookingFuntions = () => {
 
       if (selectedRouteQuerySnapShot?.empty) {
         return {
+          data: null,
           success: false,
           message: "No Route Found",
         };

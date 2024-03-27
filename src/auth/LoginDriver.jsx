@@ -107,7 +107,7 @@ export default function LoginDriver() {
             disabled={loading}
           >
             {loading && (
-              <>
+              <div className="flex items-center">
                 <svg
                   aria-hidden="true"
                   className="my-2 w-4 h-4 mr-3 text-gray-200 animate-spin dark:text-gray-600 fill-white"
@@ -127,7 +127,7 @@ export default function LoginDriver() {
                 <span className="ml-2 text-white font-semibold">
                   Loading...
                 </span>
-              </>
+              </div>
             )}
             {!loading && "Log In"}
           </button>

@@ -104,20 +104,33 @@ export const useBenkikoApiDepositWithdrawOperations = () => {
       const responseData = await response.json();
       console.log("payment api response >> ", response);
       console.log("payment api response.JSON() >> ", responseData);
-      if (responseData?.code !== 201) {
-        throw new Error(`HTTP error Status: ${responseData?.message}`);
-      } else {
-        console.log(`HTTP SUCCESS REQUEST Status: ${responseData?.status}`);
 
+      if (responseData?.code === 201) {
+        console.log(`HTTP SUCCESS REQUEST Status: ${responseData?.status}`);
         console.log("Payment responseData >> ", responseData);
         return {
           success: true,
           message: "Successfully created payment.",
           data: responseData,
         };
+      } else if (responseData?.code === 400) {
+        throw new Error(`Bad request: ${responseData?.message}`);
+      } else if (responseData?.code === 401) {
+        throw new Error(`Authentication failed: ${responseData?.data?.error}`);
+      } else if (responseData?.code === 404) {
+        throw new Error(`Not found: ${responseData?.data?.error}`);
+      } else if (responseData?.code === 422) {
+        throw new Error(`Validation failed: ${responseData?.data?.error}`);
+      } else {
+        throw new Error(`HTTP error Status: ${responseData?.message}`);
       }
     } catch (error) {
-      console.error("Error in Payment :", error);
+      console.error("Error in Payment:", error);
+      return {
+        success: false,
+        message: "Error creating payment.",
+        error: error.message,
+      };
     }
   };
 
