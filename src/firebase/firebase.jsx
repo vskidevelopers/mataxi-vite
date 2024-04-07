@@ -365,7 +365,7 @@ export const useProfileFunctions = () => {
           insurancePolicy: null,
           licenseExpirationDate: null,
           licenseNumber: null,
-          sacco: data.sacco.sacco,
+          sacco: data.sacco,
           seatCapacity: null,
           vehicleColor: null,
           vehicleMake: null,

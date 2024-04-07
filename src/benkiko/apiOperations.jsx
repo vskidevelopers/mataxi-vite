@@ -62,11 +62,6 @@ export const useBenkikoApiDepositWithdrawOperations = () => {
       console.log("assetData.code >> ", assetData?.code);
       console.log("assetData.domain >> ", anchors[assetData.domain]);
       console.log("secret key >> ", secret_key);
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! Status: ${response.status}`);
-      // } else {
-      //   console.log(`HTTP SUCCESS REQUEST! Status: ${response.status}`);
-      // }
 
       if (response) {
         console.log("fetch response >> ", response);
@@ -134,5 +129,34 @@ export const useBenkikoApiDepositWithdrawOperations = () => {
     }
   };
 
-  return { handleDeposit, handleWithdraw, handlePayment };
+  const getBenkikoBal = async (accessToken, account_id) => {
+    const url = `https://staging.api.benkiko.io/v1/account-info?account_id=${account_id}`;
+    console.log(
+      `params received for getBenkikoBal() >> accessToken = ${accessToken} || account_id = ${account_id}`
+    );
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (response) {
+        console.log("fetch response >> ", response);
+      }
+
+      const responseData = await response.json();
+      console.log("responseData >> ", responseData);
+      const bal = responseData?.data?.balances?.[0]?.balance;
+      const formattedBalance = parseFloat(bal).toFixed(2);
+      return { success: true, data: formattedBalance };
+    } catch (error) {
+      console.error("Fetch error:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  return { handleDeposit, handleWithdraw, handlePayment, getBenkikoBal };
 };

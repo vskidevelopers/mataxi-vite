@@ -14,14 +14,14 @@ const createUserUrl = `${baseUrl}/v1/account`;
 
 export const useAuthUserDataFunctions = () => {
   const { fetchDriverUserInfo } = useProfileFunctions();
-  const [mmemonics, setMmemonics] = useState(null);
+  const [mmemonics, setMmemonics] = useState();
   const [userData, setUserData] = useState({
     username: localStorage.getItem("username")
       ? localStorage.getItem("username")
-      : null,
+      : "null",
     mmemonics: localStorage.getItem("mmemonics")
       ? localStorage.getItem("mmemonics")
-      : null,
+      : "null",
     index: 0,
     language: "ENGLISH",
     home_domain: "benkiko.io",
@@ -239,21 +239,14 @@ export const useAuthUserDataFunctions = () => {
       }
 
       function validateAndModifyUsername(username) {
-        // Remove leading and trailing whitespaces
-        username = username.trim();
+        console.log("validating and modifying username >> ", username);
+        let modifiedName = username.replace(/\s+/g, "");
 
-        // Merge names if there is a space
-        if (username.includes(" ")) {
-          username = username.replace(/\s+/g, ""); // Remove spaces
-        }
+        // Convert to lowercase
+        modifiedName = modifiedName.toLowerCase();
 
-        // Remove underscores and capitalize preceding letter
-        if (username.includes("_")) {
-          username = username
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase());
-        }
-        return username;
+        console.log("modded username >> ", modifiedName);
+        return modifiedName;
       }
 
       const modifiedUsername = validateAndModifyUsername(

@@ -26,6 +26,7 @@ export default function SignUpRider({ userType }) {
         console.log("if userData.mmemonics >>", userData);
 
         navigate(`/signup/${userType.user}/mmemonics`);
+        setLoading(false);
       }
     }
   };
@@ -41,7 +42,6 @@ export default function SignUpRider({ userType }) {
         }));
         localStorage.setItem("username", username);
         handleGenerateMmemonics();
-        setLoading(false);
       } else {
         alert("Enter Username");
       }

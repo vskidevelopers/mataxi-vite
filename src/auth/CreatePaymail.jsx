@@ -5,10 +5,11 @@ import { useAuthUserDataFunctions } from "./AuthStateManager";
 import { useProfileFunctions } from "../firebase/firebase";
 
 function CreatePaymail({ userDetails }) {
-  console.log("userDetails from create PATMAIL >> ", userDetails);
+  console.log("userDetails from create PAYMAIL >> ", userDetails);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const { control, handleSubmit } = useForm();
+  const [usernameError, setUsernameError] = useState("");
+  const { control, handleSubmit, setValue } = useForm();
   const userType = useParams();
   const { generateMmemonics, userData, createWalletAutomatically } =
     useAuthUserDataFunctions();
@@ -34,12 +35,12 @@ function CreatePaymail({ userDetails }) {
 
   const handleGenerateWalletAutomatically = async () => {
     setLoading(true);
-    const autoWalletGenerationResponse = await createWalletAutomatically();
-    console.log(
-      "autoWalletGenerationResponse >> ",
-      autoWalletGenerationResponse
-    );
     try {
+      const autoWalletGenerationResponse = await createWalletAutomatically();
+      console.log(
+        "autoWalletGenerationResponse >> ",
+        autoWalletGenerationResponse
+      );
       const driverWalletData = {
         mmemonics: autoWalletGenerationResponse.mnemonics,
         paymail: autoWalletGenerationResponse.data.paymail,
@@ -58,6 +59,22 @@ function CreatePaymail({ userDetails }) {
       setLoading(false);
       throw error;
     }
+    setLoading(false);
+  };
+
+  const handleUsernameChange = (event) => {
+    let inputUsername = event.target.value.trim(); // Remove leading and trailing whitespaces
+    inputUsername = inputUsername.toLowerCase(); // Convert to lowercase
+
+    // Validate username (you can add your custom validation logic here)
+    if (!inputUsername) {
+      setUsernameError("Username is required");
+    } else {
+      setUsernameError(""); // Clear error if username is valid
+    }
+
+    // Update form field value
+    setValue("username", inputUsername); // Ensure setValue is imported correctly and available here
   };
 
   return (
@@ -78,12 +95,18 @@ function CreatePaymail({ userDetails }) {
               defaultValue=""
               rules={{ required: true }}
               render={({ field }) => (
-                <input
-                  {...field}
-                  type="text"
-                  placeholder="Username"
-                  className="w-full py-2 px-3 border border-gray-300 rounded-lg pr-10"
-                />
+                <>
+                  <input
+                    {...field}
+                    type="text"
+                    placeholder="Username"
+                    className="w-full py-2 px-3 border border-gray-300 rounded-lg pr-10"
+                    onChange={handleUsernameChange}
+                  />
+                  {usernameError && (
+                    <span className="text-red-500">{usernameError}</span>
+                  )}
+                </>
               )}
             />
           </div>

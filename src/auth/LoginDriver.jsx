@@ -28,6 +28,7 @@ export default function LoginDriver() {
         navigate("/home");
       } else {
         alert("error trying to login");
+        setLoading(false);
       }
     } catch (error) {
       setLoading(false);

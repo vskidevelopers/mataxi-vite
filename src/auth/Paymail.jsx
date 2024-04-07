@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { assets } from "../Utils/MataxiUtilsData";
+
 import { authUser, useProfileFunctions } from "../firebase/firebase";
 import CreatePaymail from "./CreatePaymail";
-import PaymailView from "./PaymailView";
+
+import PaymailScreen from "./PaymailScreen";
 
 function Paymail() {
   const { fetchDriverUserInfo, fetchRiderUserInfo } = useProfileFunctions();
@@ -14,6 +15,7 @@ function Paymail() {
   let mataxiUserInfo;
 
   const fetchUserData = async () => {
+    console.log("fetching user data ...");
     if (userType.user === "Rider") {
       mataxiUserInfo = await fetchRiderUserInfo(userUid);
       setUserData(mataxiUserInfo);
@@ -34,8 +36,10 @@ function Paymail() {
   console.log("userData in Paymail >> ", userData);
   console.log("mataxiUserInfo >> ", mataxiUserInfo);
 
-  if (userData?.data?.paymail) {
-    return <PaymailView userData={userData?.data} />;
+  if (userType.user === "Rider") {
+    return <PaymailScreen userData={userData?.data} />;
+  } else if (userData?.data?.paymail) {
+    return <PaymailScreen userData={userData?.data} />;
   } else {
     return <CreatePaymail userDetails={userData?.data} />;
   }

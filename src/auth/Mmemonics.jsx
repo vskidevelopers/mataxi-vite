@@ -5,10 +5,13 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useAuthUserDataFunctions } from "./AuthStateManager";
-
+import { useNavigate } from 'react-router-dom';
 const Mnemonics = () => {
+  const [copied, setCopied] = useState(false);
   const { userData, mmemonics } = useAuthUserDataFunctions();
   const [mnemonicPhrase, setMnemonicPhrase] = useState(userData.mmemonics);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setMnemonicPhrase(localStorage.getItem("mmemonics")); // Update the state when userData.mmemonics changes
@@ -17,10 +20,6 @@ const Mnemonics = () => {
   console.log("mmemonics >>", mnemonicPhrase);
   const userType = useParams();
   console.log("user type >>", userType.user);
-
-  // Sample generated mnemonic phrase (you would replace this with the actual generated phrase)
-  const mnemonicSPhrase =
-    "sample phrase word word word word word word word word word word word word";
 
   // Function to copy text to the clipboard
   const copyToClipboard = () => {
@@ -39,7 +38,27 @@ const Mnemonics = () => {
 
       // You can show a success message or perform other actions as needed
       console.log("Mnemonic phrase copied to clipboard:", mnemonicPhrase);
+      setCopied(true);
+      // Reset the text back to "Copy Phrase" after a short delay
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
     }
+  };
+
+  const handleButtonClick = () => {
+    setLoading(true);
+
+    const redirectPath =
+      userType.user === 'Rider' || userType.user === 'rider'
+        ? `/signup/${userType.user}/create-password`
+        : `/settings/${userType.user}/settings/paymail/confirm-mmemonics`;
+
+    // Simulate loading for 1.5 seconds
+    setTimeout(() => {
+      setLoading(false);
+      navigate(redirectPath);
+    }, 1500);
   };
 
   return (
@@ -64,7 +83,7 @@ const Mnemonics = () => {
               className="bg-[#F66E3C14] text-[#F66E3C] py-2 px-4 rounded-lg hover:bg-[#F57859] hover:text-white flex items-center"
             >
               <ClipboardDocumentIcon className="h-5 w-5 mr-1" />
-              Copy Phrase
+              {copied ? "Copied" : "Copy Phrase"}
             </button>
           </div>
         </div>

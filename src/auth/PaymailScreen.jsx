@@ -1,33 +1,35 @@
-import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useBenkikoApiDepositWithdrawOperations } from "../benkiko/apiOperations";
 import { useAuthUserDataFunctions } from "./AuthStateManager";
+import { useBenkikoApiDepositWithdrawOperations } from "../benkiko/apiOperations";
+import { useState } from "react";
 
-const PaymailView = async ({ userData }) => {
-  const [accessToken, setAccessToken] = useState(null);
+export default function PaymailScreen({ userData }) {
+  const [demoBal, setDemoBal] = useState(0);
+  const userType = useParams();
   const { generateAccessToken } = useAuthUserDataFunctions();
   const { getBenkikoBal } = useBenkikoApiDepositWithdrawOperations();
-  // generate access token
-  const getAccount = async () => {
-    const accessTokenRes = await generateAccessToken();
-    const accessTokenData = accessTokenRes?.data?.data?.token;
-    console.log("access Token generated >> ", accessTokenData);
-    setAccessToken(accessTokenData);
 
-    if (accessTokenData) {
-      const accountBal = await getBenkikoBal(
-        accessTokenData,
-        userData?.public_key
-      );
-      console.log("accountBal >> ", accountBal);
-    } else {
-      console.log("no access Token");
+  const getAccount = async () => {
+    console.log("clicked check bal");
+    console.log("userData >> ", userData);
+    try {
+      const accessTokenRes = await generateAccessToken();
+      const accessTokenData = accessTokenRes?.data?.data?.token;
+      console.log("access Token generated >> ", accessTokenData);
+      if (accessTokenData) {
+        const accountBal = await getBenkikoBal(
+          accessTokenData,
+          userData?.public_key
+        );
+        console.log("accountBal >> ", accountBal);
+        setDemoBal(accountBal?.data);
+      } else {
+        console.log("no access Token");
+      }
+    } catch (error) {
+      console.log("caught error >> ", error);
     }
   };
-
-  const userType = useParams();
-  console.log("userData from PaymailView >> ", userData);
-  console.log("accessToken from PaymailView >> ", accessToken);
 
   return (
     <div className="bg-white p-5 rounded-lg shadow-md w-full max-w-xl">
@@ -39,11 +41,13 @@ const PaymailView = async ({ userData }) => {
 
         <p className="text-center">
           <span className="font-bold">Paymail :</span>
+          {userData ? userData.paymail : "no user data loaded"}
         </p>
 
-        <div>
+        <div className="flex justify-around">
           <p className="text-center">
-            <span className="font-bold">Benkiko Bal :</span>
+            <span className="font-bold">Benkiko Bal : </span>
+            {demoBal} <span className="font-bold"> XLM</span>
           </p>
           <button
             onClick={getAccount}
@@ -63,6 +67,4 @@ const PaymailView = async ({ userData }) => {
       </div>
     </div>
   );
-};
-
-export default PaymailView;
+}

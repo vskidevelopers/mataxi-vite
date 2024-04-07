@@ -14,7 +14,9 @@ function SplashScreen() {
   return (
     <div className="h-screen w-full flex items-center justify-center bg-[#F66E3C] overflow-clip">
       <img src={background} className="w-full h-[120%] object-cover" alt="" />
-      <h1 className="text-9xl font-bold text-black absolute">Mataxi</h1>
+      <h1 className="text-6xl md:text-9xl font-bold text-black absolute">
+        Mataxi
+      </h1>
     </div>
   );
 }

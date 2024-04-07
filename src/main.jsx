@@ -38,7 +38,6 @@ import Paymail from "./auth/Paymail.jsx";
 import QueueManager from "./components/routeManager/QueueManager.jsx";
 import DriverWalletAutoGenarateComplete from "./auth/DriverWalletAutoGenerateComplete.jsx";
 
-// const { userData } = useAuthUserDataFunctions();
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>

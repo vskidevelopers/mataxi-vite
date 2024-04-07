@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import { useProfileFunctions } from "../firebase/firebase";
 
 const SignUpDriver = ({ userType }) => {
@@ -14,6 +14,8 @@ const SignUpDriver = ({ userType }) => {
     formState: { errors },
     reset,
   } = useForm();
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
   const { createUser } = useProfileFunctions();
   const navigate = useNavigate();
@@ -32,13 +34,15 @@ const SignUpDriver = ({ userType }) => {
       setLoading(true);
 
       const response = await createUser(formattedData);
-      if (response.user.uid) {
+      if (response?.user?.uid) {
         localStorage.clear();
         localStorage.setItem("username", data.fullName);
         console.log("response >>", response);
         setLoading(false);
         reset();
         navigate("/login");
+      } else {
+        setLoading(false);
       }
     } catch (error) {
       setLoading(false);
@@ -93,7 +97,7 @@ const SignUpDriver = ({ userType }) => {
             )}
           </div>
 
-          <div className="mb-4">
+          <div className="relative mb-4">
             <Controller
               name="password"
               control={control}
@@ -101,7 +105,7 @@ const SignUpDriver = ({ userType }) => {
               render={({ field }) => (
                 <input
                   {...field}
-                  type="password"
+                  type={passwordVisible ? "text" : "password"}
                   className="w-full py-2 px-3 border border-gray-300 rounded-lg pl-10"
                   placeholder="Password"
                 />
@@ -110,6 +114,19 @@ const SignUpDriver = ({ userType }) => {
             {errors.password && (
               <span className="text-red-600">Password is required</span>
             )}
+            <button
+              type="button"
+              className=" flex items-center px-2 text-gray-400 focus:outline-none"
+              onClick={togglePasswordVisibility}
+            >
+              <div className="absolute right-1 top-0 flex items-center h-full ">
+                {passwordVisible ? (
+                  <EyeIcon className=" h-4 w-4" />
+                ) : (
+                  <EyeSlashIcon className="h-4 w-4" />
+                )}
+              </div>
+            </button>
           </div>
 
           <div className="mt-4 flex items-center">

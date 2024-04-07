@@ -7,14 +7,25 @@ import {
 import { useDropzone } from "react-dropzone";
 import { useNavigate, useParams } from "react-router-dom";
 import { driverUser, authUser } from "../firebase/firebase";
-import { Combobox, Transition } from "@headlessui/react";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import { Listbox, Transition } from "@headlessui/react";
+import {
+  CheckIcon,
+  ChevronUpDownIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/20/solid";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function ProfileCreate() {
   const userType = useParams();
   const [imagesUploaded, setImagesUploaded] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const [saccos, setSaccos] = useState([]);
+  const [spin, setSpin] = useState(false);
   const navigate = useNavigate();
   const {
     profilePictureImageURL,
@@ -43,18 +54,23 @@ function ProfileCreate() {
     }
   };
 
+  const refresh = () => {
+    fetchUserDetails();
+    setSpin(true);
+  };
+
   useEffect(() => {
     fetchUserDetails();
   }, []);
 
-  useEffect(() => {
-    const fetchAllSaccos = async () => {
-      const fetchSaccosResponse = await fetchSaccos();
-      setSaccos(fetchSaccosResponse?.saccos);
-      console.log("fetchSaccosResponse >> ", fetchSaccosResponse);
-      console.log("fetchSaccosResponse.saccos >> ", fetchSaccosResponse.saccos);
-    };
+  const fetchAllSaccos = async () => {
+    const fetchSaccosResponse = await fetchSaccos();
+    setSaccos(fetchSaccosResponse?.saccos);
+    console.log("fetchSaccosResponse >> ", fetchSaccosResponse);
+    console.log("fetchSaccosResponse.saccos >> ", fetchSaccosResponse.saccos);
+  };
 
+  useEffect(() => {
     fetchAllSaccos();
   }, []);
 
@@ -70,22 +86,13 @@ function ProfileCreate() {
     setValue,
   } = useForm();
 
-  const {
-    field: { onChange, value },
-    fieldState: { error },
-  } = useController({
-    name: "sacco",
-    control,
-    defaultValue: "", // Set the default value
-  });
-
   const onDrop = (fieldName, acceptedFiles) => {
     // Use setValue to set the selected files in the form data
     setValue(fieldName, acceptedFiles[0]);
   };
 
   const [selectedSacco, setSelectedSacco] = useState(
-    saccos ? saccos[0] : "select Sacco"
+    saccos ? saccos[0] : userDetails?.sacco
   );
   const [query, setQuery] = useState("");
 
@@ -191,7 +198,7 @@ function ProfileCreate() {
         insurancePolicyImageURL
       );
       if (!imagesUploaded) {
-        alert("Uploading Files. Click Ok to continue");
+        alert("Checking Reports. Click Ok to continue");
         console.log("Image URLs not available.");
 
         if (driverPictureFile && inspectionReportFile && insurancePolicyFile) {
@@ -230,18 +237,63 @@ function ProfileCreate() {
     }
   };
 
+  const getCurrentDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    let month = today.getMonth() + 1;
+    let day = today.getDate();
+
+    // Add leading zero if month/day is a single digit
+    month = month < 10 ? `0${month}` : month;
+    day = day < 10 ? `0${day}` : day;
+
+    return `${year}-${month}-${day}`;
+  };
+
   return (
     <div className="mt-20 inset-0 flex justify-center z-20">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-xl">
         <h1 className="text-center text-2xl font-semibold mb-4 text-[#F66E3C]">
           Mataxi{" "}
         </h1>
-        <h2 className="text-lg font-semibold text-[#F66E3C]">
-          Welcome{" "}
-          {userDetails != null
-            ? userDetails?.data?.driverUsername
-            : "No driver"}
-        </h2>
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold text-[#F66E3C]">
+            Welcome{" "}
+            {userDetails != null
+              ? userDetails?.data?.driverUsername
+              : "No driver"}
+          </h2>
+
+          {userDetails === null && (
+            <span className="flex  group items-center">
+              <p className=" text-sm text-slate-800 mr-5">
+                {" "}
+                Can't see your username? click here to reload
+              </p>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <button
+                      onClick={refresh}
+                      className=" mr-5 py-1 px-3 border rounded-md border-[#F66E3C] bg-white group-hover:bg-[#F66E3C]"
+                    >
+                      <ArrowPathIcon
+                        className={`${
+                          spin ? "animate-spin" : ""
+                        } h-4 w-4 text-[#F66E3C] group-hover:text-white`}
+                      />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Reload</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </span>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-[#f66E3C]">
@@ -294,9 +346,9 @@ function ProfileCreate() {
                   <input
                     {...field}
                     type="date"
-                    placeholder={"Driver's License Expiration Date"}
+                    placeholder="Driver's License Expiration Date"
                     className="border rounded-lg p-2 w-full"
-                    // disabled={userDetails != null ? true : false}
+                    min={getCurrentDate()}
                   />
                 )}
               />
@@ -309,88 +361,80 @@ function ProfileCreate() {
               <Controller
                 name="sacco"
                 control={control}
-                defaultValue=""
+                disabled={true}
+                defaultValue={
+                  selectedSacco?.saccoName
+                    ? selectedSacco.saccoName
+                    : userDetails
+                    ? userDetails?.data?.sacco?.saccoName
+                    : "reload to get saccos"
+                }
                 render={() => (
-                  <Combobox value={selectedSacco} onChange={setSelectedSacco}>
+                  <Listbox value={selectedSacco} onChange={setSelectedSacco}>
                     <div className="relative mt-1">
                       <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left border focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm p-1">
-                        <Combobox.Input
-                          className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-                          displayValue={(sacco) => sacco.saccoName}
-                          onChange={(event) => setQuery(event.target.value)}
-                        />
-                        <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-                          <ChevronUpDownIcon
-                            className="h-5 w-5 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </Combobox.Button>
+                        <Listbox.Button className="flex w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0">
+                          {selectedSacco
+                            ? selectedSacco.saccoName
+                            : userDetails
+                            ? userDetails?.data?.sacco?.saccoName
+                            : "Select a sacco"}
+                          <div className="absolute top-0 right-0 flex h-full items-center">
+                            <ChevronUpDownIcon className=" flex items-center pr-2 h-5 w-8 text-gray-400" />
+                          </div>
+                        </Listbox.Button>
                       </div>
-                      <Transition
-                        as={Fragment}
-                        leave="transition ease-in duration-100"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                        afterLeave={() => setQuery("")}
-                      >
-                        <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                          {filteredSaccos?.length === 0 && query !== "" ? (
-                            <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
-                              Nothing found.
-                            </div>
-                          ) : (
-                            filteredSaccos?.map((sacco) => (
-                              <Combobox.Option
-                                key={sacco.id}
-                                className={({ active }) =>
-                                  `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                    active
-                                      ? "bg-[#F66E3C] text-white"
-                                      : "text-gray-900"
-                                  }`
-                                }
-                                value={sacco}
-                                onClick={() => {
-                                  onChange(sacco); // Update the value using the onChange function
-                                }}
-                              >
-                                {({ selectedSacco, active }) => (
-                                  <>
+                      <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                        {filteredSaccos?.length === 0 && query !== "" ? (
+                          <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
+                            Nothing found.
+                          </div>
+                        ) : (
+                          filteredSaccos?.map((sacco) => (
+                            <Listbox.Option
+                              key={sacco.id}
+                              className={({ active }) =>
+                                `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                  active
+                                    ? "bg-[#F66E3C] text-white"
+                                    : "text-gray-900"
+                                }`
+                              }
+                              value={sacco}
+                            >
+                              {({ selected, active }) => (
+                                <>
+                                  <div
+                                    className={`block truncate ${
+                                      selected ? "font-medium" : "font-normal"
+                                    }`}
+                                  >
+                                    {sacco.saccoName}
+                                  </div>
+                                  {selected ? (
                                     <span
-                                      className={`block truncate ${
-                                        selectedSacco
-                                          ? "font-medium"
-                                          : "font-normal"
+                                      className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                        active ? "text-white" : "text-teal-600"
                                       }`}
                                     >
-                                      {sacco.saccoName}
+                                      <CheckIcon
+                                        className="h-5 w-5"
+                                        aria-hidden="true"
+                                      />
                                     </span>
-                                    {selectedSacco ? (
-                                      <span
-                                        className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                                          active
-                                            ? "text-white"
-                                            : "text-teal-600"
-                                        }`}
-                                      >
-                                        <CheckIcon
-                                          className="h-5 w-5"
-                                          aria-hidden="true"
-                                        />
-                                      </span>
-                                    ) : null}
-                                  </>
-                                )}
-                              </Combobox.Option>
-                            ))
-                          )}
-                        </Combobox.Options>
-                      </Transition>
+                                  ) : null}
+                                </>
+                              )}
+                            </Listbox.Option>
+                          ))
+                        )}
+                      </Listbox.Options>
                     </div>
-                  </Combobox>
+                  </Listbox>
                 )}
               />
             </div>
+
             <div className="mt-2">
               <Controller
                 name="saccoNumber"
@@ -534,8 +578,8 @@ function ProfileCreate() {
 
             <div className="mt-2">
               {/* <label className="block mb-1 text-gray-600">
-                Total Seat Capacity
-              </label> */}
+                    Total Seat Capacity
+                  </label> */}
               <Controller
                 name="seatCapacity"
                 control={control}
@@ -601,12 +645,10 @@ function ProfileCreate() {
             className="bg-[#F66E3C] text-white rounded-lg py-2 px-4 hover:bg-[#F74909] transition duration-300"
           >
             {loading
-              ? `${
-                  profilePictureUploadProgress ||
-                  inspectionReportUploadProgress ||
-                  insurancePolicyUploadProgress
-                } % Images uploading...`
-              : "Submit"}
+              ? " Checking Reports..."
+              : imagesUploaded
+              ? "Submit"
+              : "Upload Reports"}
           </button>
         </form>
       </div>

@@ -22,7 +22,7 @@ export const welcomeScreensData = [
     message:
       "The hassle-free travel platform that digitizes public transport and makes payment easy. With Mataxi, you can schedule your travel plans, book seats, and trade seats if you need to.",
     svgSrc: tripImg,
-    screenHref: "welcome-screen-1",
+    screenHref: "/home",
     screenTarget: "Get Started",
     nextHref: "/welcome-screen/find-your-routes",
     prevHref: "/welcome-screen/welcome-to-mataxi",
